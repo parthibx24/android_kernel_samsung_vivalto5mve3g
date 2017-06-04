@@ -17,7 +17,6 @@ OUTPUT=Output
 
 export CROSS_COMPILE=/home/parthib/arm-eabi-4.9/bin/arm-eabi-
 export ARCH=arm
-export LOCALVERSION=-`echo ace4krnl`
 
 KERNEL_PATH=$(pwd)
 MODULES=${KERNEL_PATH}/drivers
