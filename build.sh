@@ -12,33 +12,37 @@ VERSION=v3.10.17
 DEVICE=vivalto5mve
 OWNER=Parthib
 NOW=`date "+%d%m%Y-%H%M%S"`
-PREFIX=SA
+PREFIX=RKR
+OUTPUT=Output
 
 export CROSS_COMPILE=/home/parthib/arm-eabi-4.9/bin/arm-eabi-
 export ARCH=arm
 export LOCALVERSION=-`echo ace4krnl`
 
 KERNEL_PATH=$(pwd)
-KERNEL_ZIP=${KERNEL_PATH}/kernel_zip
-KERNEL_ZIP_NAME=${NAME}-${VERSION}-${DEVICE}-${OWNER}-${NOW}-${PREFIX}
 MODULES=${KERNEL_PATH}/drivers
 
 JOBS=`grep processor /proc/cpuinfo | wc -l`
 
 function build_kernel() {
+    mkdir ${OUTPUT}
 	make ${DEFCONFIG}
 	make -j${JOBS}
-	find ${KERNEL_PATH}/drivers -name "*.ko" -exec cp -f {} ${KERNEL_PATH}/output \;
-	find ${KERNEL_PATH} -name zImage -exec cp -f {} ${KERNEL_PATH}/output \;
+	mkdir ${OUTPUT}/Modules
+	find ${KERNEL_PATH}/drivers -name "*.ko" -exec cp -f {} ${KERNEL_PATH}/${OUTPUT}/Modules \;
+	find ${KERNEL_PATH} -name zImage -exec cp -f {} ${KERNEL_PATH}/${OUTPUT}/zImage-${DEVICE}-${NOW} \;
 	echo -e $COLOR_YELLOW"ZIMAGE IS IN OUTPUT FOLDER"
+}
+
+function rm_out() {
+	rm -rf ${KERNEL_PATH}/${OUTPUT}
+	echo -e $COLOR_RED"OUTPUT FOLDER IS DELETED"
 }
 
 function make_clean(){
 	find ${KERNEL_PATH} -name zImage -exec rm -f {} \;
 	find ${KERNEL_PATH} -name "*.ko" -exec rm -f {} \;
 	make mrproper && make clean
-	rm  ${KERNEL_PATH}/*.ko
-	rm  ${KERNEL_PATH}/zimage
 }
 
 COLOR_RED=$(tput bold)$(tput setaf 1)
@@ -66,6 +70,7 @@ echo "================================================"
 echo
 echo "  1  = Delete .config/clean cache"
 echo -e $COLOR_GREEN"  2  = Start building kernel"$COLOR_NEUTRAL
+echo "  3  = Delete Output"
 echo
 echo "================================================"
 echo -e $COLOR_YELLOW"       JUST CHOOSE THE NUMBER,"
@@ -83,6 +88,10 @@ case "$x" in
 		build_kernel
 		exit
 		;;
+	3)
+		rm_out
+		exit
+		;;	
 	esac
 
 exit
