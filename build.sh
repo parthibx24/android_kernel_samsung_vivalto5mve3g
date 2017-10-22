@@ -1,21 +1,21 @@
 #!/bin/bash
 ##
-#  Copyright (C) 2015, Samsung Electronics, Co., Ltd.
-#  Written by System S/W Group, S/W Platform R&D Team,
-#  Mobile Communication Division.
+# kernel build script.
 ##
 
 set -e -o pipefail
 
-DEFCONFIG=apias_defconfig
+export TOOLCHAIN_DIR=/home/parthib/toolchains/ubarm-eabi-4.9
+
+DEFCONFIG=lineage_vivalto5mve3g_defconfig
 VERSION=v3.10.17
-DEVICE=vivalto5mve
-OWNER=Parthib
+DEVICE=vivalto5mve3g
 NOW=`date "+%d%m%Y-%H%M%S"`
-PREFIX=RKR
+PREFIX=NULL
 OUTPUT=Output
 
-export CROSS_COMPILE=/home/parthib/arm-eabi-4.9/bin/arm-eabi-
+
+export CROSS_COMPILE=${TOOLCHAIN_DIR}/bin/arm-eabi-
 export ARCH=arm
 
 KERNEL_PATH=$(pwd)
@@ -24,24 +24,25 @@ MODULES=${KERNEL_PATH}/drivers
 JOBS=`grep processor /proc/cpuinfo | wc -l`
 
 function build_kernel() {
-    mkdir ${OUTPUT}
+	mkdir -p ${OUTPUT}
 	make ${DEFCONFIG}
 	make -j${JOBS}
 	mkdir ${OUTPUT}/Modules
 	find ${KERNEL_PATH}/drivers -name "*.ko" -exec cp -f {} ${KERNEL_PATH}/${OUTPUT}/Modules \;
 	find ${KERNEL_PATH} -name zImage -exec cp -f {} ${KERNEL_PATH}/${OUTPUT}/zImage-${DEVICE}-${NOW} \;
-	echo -e $COLOR_YELLOW"ZIMAGE IS IN OUTPUT FOLDER"
+	echo -e $COLOR_YELLOW"  ZIMAGE IS IN ${OUTPUT} FOLDER"
 }
 
 function rm_out() {
 	rm -rf ${KERNEL_PATH}/${OUTPUT}
-	echo -e $COLOR_RED"OUTPUT FOLDER IS DELETED"
+	echo -e $COLOR_RED"  OUTPUT FOLDER IS DELETED"
 }
 
 function make_clean(){
 	find ${KERNEL_PATH} -name zImage -exec rm -f {} \;
 	find ${KERNEL_PATH} -name "*.ko" -exec rm -f {} \;
 	make mrproper && make clean
+	echo -e $COLOR_RED"  DONE!"
 }
 
 COLOR_RED=$(tput bold)$(tput setaf 1)
